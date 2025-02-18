@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: exchange-rate-service
+
+server:
+  port: 8080
+
+exchange:
+  rate:
+    provider-api:
+      url: http://api.exchangerate.host
+      key: REPLACE_ME
+    preload:
+      currencies: USD,EUR,GBP,JPY
+    cache:
+      refresh-interval: 50000
+      duration-minutes: 1
+      initial-capacity: 100
+      maximum-size: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+  endpoint:
+    health:
+      show-details: always
