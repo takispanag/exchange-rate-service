@@ -1,8 +1,8 @@
-package com.currencyapi.component;
+package com.exchange.converter;
 
-import com.currencyapi.dto.ConversionResultDto;
-import com.currencyapi.dto.ExchangeRateDto;
-import com.currencyapi.dto.MultiConversionResultDto;
+import com.exchange.dto.ConversionResultDto;
+import com.exchange.dto.ExchangeRateDto;
+import com.exchange.dto.MultiConversionResultDto;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -13,17 +13,16 @@ import java.util.stream.Collectors;
 @Component
 public class CurrencyConverter {
 
-    public ConversionResultDto createSingleConversion(
-            ExchangeRateDto exchangeRate,
-            String fromCurrency,
-            String toCurrency,
-            double amount) {
+    public ConversionResultDto createSingleConversion(ExchangeRateDto exchangeRate,
+                                                      String sourceCurrency,
+                                                      String targetCurrency,
+                                                      double amount) {
 
-        double rate = exchangeRate.getRates().get(toCurrency);
+        double rate = exchangeRate.getRates().get(targetCurrency);
 
         return ConversionResultDto.builder()
-                .fromCurrency(fromCurrency)
-                .toCurrency(toCurrency)
+                .sourceCurrency(sourceCurrency)
+                .targetCurrency(targetCurrency)
                 .amount(amount)
                 .convertedAmount(amount * rate)
                 .rate(rate)
@@ -31,13 +30,11 @@ public class CurrencyConverter {
                 .build();
     }
 
-
     // TODO the logic is not perfect for this multiconversion, to be revisited
-    public MultiConversionResultDto createMultiConversion(
-            ExchangeRateDto exchangeRate,
-            String fromCurrency,
-            List<String> targetCurrencies,
-            double amount) {
+    public MultiConversionResultDto createMultiConversion(ExchangeRateDto exchangeRate,
+                                                          String sourceCurrency,
+                                                          List<String> targetCurrencies,
+                                                          double amount) {
 
         Map<String, Double> rates = exchangeRate.getRates();
         Map<String, Double> conversions = targetCurrencies.stream()
@@ -47,7 +44,7 @@ public class CurrencyConverter {
                 ));
 
         return MultiConversionResultDto.builder()
-                .fromCurrency(fromCurrency)
+                .sourceCurrency(sourceCurrency)
                 .amount(amount)
                 .conversions(conversions)
                 .rates(rates)

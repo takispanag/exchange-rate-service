@@ -1,4 +1,4 @@
-package com.currencyapi.dto;
+package com.exchange.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 @Builder
 public class MultiConversionResultDto {
-    private String fromCurrency;
+    private String sourceCurrency;
     private double amount;
     private Map<String, Double> conversions;
     private Map<String, Double> rates;

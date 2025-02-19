@@ -1,4 +1,4 @@
-package com.currencyapi.config;
+package com.exchange.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
@@ -30,12 +30,11 @@ public class CacheConfig {
     @Primary
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
-        cacheManager.setCacheNames(Arrays.asList("exchangeRates", "allRates"));
+        cacheManager.setCacheNames(Arrays.asList("exchangeRates", "allRates", "availableCurrencies"));
         cacheManager.setCaffeine(caffeineCacheBuilder());
         return cacheManager;
     }
 
-    // TODO REMOVE LOGS
     private Caffeine<Object, Object> caffeineCacheBuilder() {
         return Caffeine.newBuilder()
                 .recordStats()
@@ -43,6 +42,6 @@ public class CacheConfig {
                 .maximumSize(maximumSize)
                 .expireAfterWrite(cacheDurationMinutes, TimeUnit.MINUTES)
                 .removalListener((key, value, cause) ->
-                        log.info("Cache entry removed - Key: {}, Cause: {}", key, cause));
+                        log.debug("Cache entry removed - Key: {}, Cause: {}", key, cause));
     }
 }

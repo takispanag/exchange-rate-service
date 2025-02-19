@@ -1,5 +1,6 @@
-package com.currencyapi.model;
+package com.exchange.model;
 
+import com.exchange.validator.ValidCurrency;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -10,8 +11,11 @@ import java.util.List;
 
 @Data
 public class MultiCurrencyConversionRequest {
+
+    @ValidCurrency
+    @NotNull(message = "Source currency cannot be null")
     @NotBlank(message = "Source currency is required")
-    private String fromCurrency;
+    private String sourceCurrency;
 
     @NotEmpty(message = "Target currencies list cannot be empty")
     private List<String> targetCurrencies;

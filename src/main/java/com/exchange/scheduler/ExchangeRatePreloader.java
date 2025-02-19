@@ -1,7 +1,7 @@
-package com.currencyapi.scheduler;
+package com.exchange.scheduler;
 
-import com.currencyapi.dto.ExchangeRateDto;
-import com.currencyapi.service.ExchangeRateService;
+import com.exchange.dto.ExchangeRateDto;
+import com.exchange.service.ExchangeRateService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

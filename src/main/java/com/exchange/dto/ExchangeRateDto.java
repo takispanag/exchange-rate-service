@@ -1,4 +1,4 @@
-package com.currencyapi.dto;
+package com.exchange.dto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 @Builder
 public class ExchangeRateDto {
-    private String baseCurrency;
+    private String sourceCurrency;
     private Map<String, Double> rates;
     private Instant timestamp;
 }
