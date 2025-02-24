@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 @EnableCaching
 @Slf4j
 public class CacheConfig {
-    @Value("${exchange.rate.cache.duration-minutes}")
-    private int cacheDurationMinutes;
+    @Value("${exchange.rate.cache.duration-seconds:50}")
+    private int cacheDurationSeconds;
 
     @Value("${exchange.rate.cache.initial-capacity}")
     private int initialCapacity;
@@ -40,7 +40,7 @@ public class CacheConfig {
                 .recordStats()
                 .initialCapacity(initialCapacity)
                 .maximumSize(maximumSize)
-                .expireAfterWrite(cacheDurationMinutes, TimeUnit.MINUTES)
+                .expireAfterWrite(cacheDurationSeconds, TimeUnit.SECONDS)
                 .removalListener((key, value, cause) ->
                         log.debug("Cache entry removed - Key: {}, Cause: {}", key, cause));
     }

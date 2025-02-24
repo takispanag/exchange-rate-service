@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @Builder
-public class ErrorResponse {
+public class ApiErrorResponse {
     private final int status;
     private final String message;
     private final Map<String, String> errors;

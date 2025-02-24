@@ -21,20 +21,20 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-cache"
     implementation "org.springframework.boot:spring-boot-starter-validation"
-    implementation "org.springframework.boot:spring-boot-starter-aop"
-    implementation "org.springframework.retry:spring-retry:${springRetryVersion}"
 
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${openApiVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter-api"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    testImplementation "org.wiremock:wiremock-standalone:${wireMockVersion}"
 }
 
 test {
@@ -46,5 +46,13 @@ jacocoTestReport {
     reports {
         xml.required = false
         html.required = true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/config/**'
+            ])
+        }))
     }
 }

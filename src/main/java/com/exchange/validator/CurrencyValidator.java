@@ -1,38 +1,44 @@
 package com.exchange.validator;
 
-
-import com.exchange.dto.CurrencyDto;
-import com.exchange.service.CurrencyService;
+import com.exchange.config.CurrencyConfig;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 
+/**
+ * Validator component that checks if a currency code is supported by the application.
+ * Implements {@link ConstraintValidator} to provide custom validation logic for {@link ValidCurrency} annotation.
+ */
 @Component
-@RequiredArgsConstructor
 public class CurrencyValidator implements ConstraintValidator<ValidCurrency, String> {
+    private final Set<String> supportedCurrencies;
 
-    private final CurrencyService currencyService;
-    private Set<String> validCurrencyCodes;
-
-    @Override
-    public void initialize(ValidCurrency constraintAnnotation) {
-        validCurrencyCodes = currencyService.getAvailableCurrencies()
-                .stream()
-                .map(CurrencyDto::getCode)
-                .collect(Collectors.toSet());
+    /**
+     * Creates a new validator with the supported currencies configuration.
+     *
+     * @param currencyConfig configuration containing the set of supported currency codes
+     */
+    public CurrencyValidator(CurrencyConfig currencyConfig) {
+        this.supportedCurrencies = currencyConfig.getSupported();
     }
 
+    /**
+     * Validates if the given currency code is supported.
+     *
+     * @param currency the currency code to validate
+     * @param context  validation context
+     * @return true if the currency is not null and is in the supported currencies set
+     */
     @Override
-    public boolean isValid(String value, ConstraintValidatorContext context) {
-        if (value == null) {
+    public boolean isValid(String currency, ConstraintValidatorContext context) {
+        if (currency == null || !supportedCurrencies.contains(currency)) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate(
+                    "Currency '" + currency + "' is not supported.").addConstraintViolation();
             return false;
         }
-
-        return validCurrencyCodes.contains(value.toUpperCase());
+        return true;
     }
 }
-

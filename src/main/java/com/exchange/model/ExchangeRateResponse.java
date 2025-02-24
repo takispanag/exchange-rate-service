@@ -2,6 +2,7 @@ package com.exchange.model;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Data
@@ -11,6 +12,6 @@ public class ExchangeRateResponse {
     private String privacy;
     private long timestamp;
     private String source;
-    private Map<String, Double> quotes;
+    private Map<String, BigDecimal> quotes;
 }
 

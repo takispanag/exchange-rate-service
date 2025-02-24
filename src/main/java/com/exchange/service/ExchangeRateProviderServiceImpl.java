@@ -1,9 +1,7 @@
 package com.exchange.service;
 
-import com.exchange.converter.CurrencyConverter;
-import com.exchange.dto.ConversionResultDto;
-import com.exchange.dto.ExchangeRateDto;
-import com.exchange.dto.MultiConversionResultDto;
+import com.exchange.dto.AllExchangeRatesDto;
+import com.exchange.dto.SingleExchangeRateDto;
 import com.exchange.exception.ExchangeRateException;
 import com.exchange.model.ExchangeRateResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,19 +11,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
-import java.util.List;
 
+/**
+ * Implementation of {@link ExchangeRateProviderService} that fetches exchange rates from an external API.
+ * Uses Spring's caching mechanism to optimize performance and reduce API calls.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ExchangeRateServiceImpl implements ExchangeRateService {
-
+public class ExchangeRateProviderServiceImpl implements ExchangeRateProviderService {
     private final RestClient exchangeClient;
-    private final CurrencyConverter currencyConverter;
 
+    /**
+     * Fetches and caches the exchange rate for a specific currency pair.
+     *
+     * @param sourceCurrency the source currency code
+     * @param targetCurrency the target currency code
+     * @return {@link SingleExchangeRateDto} containing the exchange rate information
+     * @throws ExchangeRateException if the exchange rate cannot be fetched
+     */
     @Override
     @Cacheable(value = "exchangeRates", key = "#sourceCurrency + '-' + #targetCurrency")
-    public ExchangeRateDto getExchangeRate(String sourceCurrency, String targetCurrency) {
+    public SingleExchangeRateDto getExchangeRate(String sourceCurrency, String targetCurrency) {
         log.info("Fetching exchange rate from {} to {}", sourceCurrency, targetCurrency);
 
         ExchangeRateResponse response = exchangeClient.get()
@@ -38,20 +45,30 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
                 .body(ExchangeRateResponse.class);
 
         if (response == null || !response.isSuccess()) {
-            throw new ExchangeRateException("Failed to fetch exchange rate from" + sourceCurrency + " to " + targetCurrency);
+            throw new ExchangeRateException("Failed to fetch exchange rate from " + sourceCurrency + " to " + targetCurrency);
         }
 
-        return ExchangeRateDto.builder()
+        String rateKey = sourceCurrency + targetCurrency;
+
+        return SingleExchangeRateDto.builder()
                 .sourceCurrency(sourceCurrency)
-                .rates(response.getQuotes())
+                .targetCurrency(targetCurrency)
+                .exchangeRate(response.getQuotes().get(rateKey))
                 .timestamp(Instant.now())
                 .build();
     }
 
+    /**
+     * Fetches and caches all exchange rates for a given base currency.
+     *
+     * @param currency the base currency code
+     * @return {@link AllExchangeRatesDto} containing all available exchange rates
+     * @throws ExchangeRateException if the exchange rates cannot be fetched
+     */
     @Override
-    @Cacheable(value = "allRates", key = "#currency", sync = true)
-    public ExchangeRateDto getAllRates(String currency) {
-        log.info("Cache miss - Fetching all rates for base currency: {}", currency);
+    @Cacheable(value = "allRates", key = "#currency")
+    public AllExchangeRatesDto getAllRates(String currency) {
+        log.info("Fetching all rates for base currency: {}", currency);
 
         ExchangeRateResponse response = exchangeClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -65,24 +82,10 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
             throw new ExchangeRateException("Failed to fetch exchange rates for " + currency);
         }
 
-        return ExchangeRateDto.builder()
+        return AllExchangeRatesDto.builder()
                 .sourceCurrency(currency)
                 .rates(response.getQuotes())
                 .timestamp(Instant.now())
                 .build();
-    }
-
-    @Override
-    public ConversionResultDto convertAmount(String sourceCurrency, String targetCurrency, double amount) {
-        ExchangeRateDto exchangeRate = getExchangeRate(sourceCurrency, targetCurrency);
-        return currencyConverter.createSingleConversion(exchangeRate, sourceCurrency, targetCurrency, amount);
-    }
-
-    @Override
-    public MultiConversionResultDto convertToMultipleCurrencies(String sourceCurrency,
-                                                                List<String> targetCurrencies,
-                                                                double amount) {
-        ExchangeRateDto exchangeRate = getAllRates(sourceCurrency);
-        return currencyConverter.createMultiConversion(exchangeRate, sourceCurrency, targetCurrencies, amount);
     }
 }
